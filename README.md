@@ -33,8 +33,6 @@ PARTITION BY toYYYYMM(event_time)
 ORDER BY symbol
 SETTINGS index_granularity = 8192
 ```
-### Support only USDT and BTC coins !
-
 
 ```
 CREATE TABLE market
@@ -77,4 +75,7 @@ SETTINGS index_granularity = 8192
         </stat>
 
 ```
+### Support only USDT and BTC coins !
 
+### License
+MIT
