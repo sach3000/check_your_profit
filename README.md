@@ -5,7 +5,7 @@ This is a simple utility for determining your profit when trading coins on the B
 Before starting crowler.py, you need:
 1. Create API for reading on Binance site
 2. Install Clickhouse-server.
-3. Create user
+3. Create user in clickhouse server (users.xml)
 4. Create database and tables
 5. Install pyton3-pip with requirements.txt
 6. Fill in the file (.env)
