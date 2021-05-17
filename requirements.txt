@@ -1,0 +1,11 @@
+flask
+flask-wtf
+Flask-Bootstrap
+Flask-HTTPAuth
+Flask-Login
+requests
+flask-moment
+environs
+schedule
+clickhouse-driver
+pandas

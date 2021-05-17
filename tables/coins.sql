@@ -1,0 +1,2 @@
+ATTACH DATABASE coins
+ENGINE = Ordinary
