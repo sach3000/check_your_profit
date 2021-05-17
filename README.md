@@ -75,7 +75,5 @@ SETTINGS index_granularity = 8192
         </stat>
 
 ```
-### Support only USD and BTC coins !
-
 ### License
 MIT
