@@ -9,6 +9,7 @@ import hashlib
 import pandas as pd
 from urllib.parse import urlencode
 from clickhouse_driver import Client
+import telegram_send
 
 
 log_file = "logs/debug.log"
@@ -19,10 +20,10 @@ logger = logging.getLogger('coins')
 KEY = env("API_KEY")
 SECRET = env("SECRET_KEY")
 COINS = env.list("COINS")
-PRICE = env.timedelta("CHECK_PRICE")
 BASE_URL = env("BINANCE_ROOT_URL")
-CHECK_PRICE = env("CHECK_PRICE")
 TIME_CALC = env("TIME_CALC")
+BOT_TOKEN = env("BOT_TOKEN")
+CHAT_ID = env("CHAT_ID")
 
 epoch = datetime.utcfromtimestamp(0)
 
@@ -199,13 +200,42 @@ def profit_by_coins():
         return print(str(exp))
     return list_of_all_profits
 
+def telegram_bot_sendtext(message):
+    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+    headers = {'Content-type': 'application/json'}
+
+    data = {
+       "chat_id" : CHAT_ID,
+       "text" : message,
+       "parse_mode" : "HTML",
+       "disable_web_page_preview" : True,
+       "disable_notification" : True
+    }
+    try:
+       response = requests.post(url, data=json.dumps(data), headers=headers)
+       if response.status_code == 200:
+          r_data = response.json()
+          logger.info(r_data)
+       else:
+          logger.error(f"http status from Telegram API: {response.status_code}, {response.text}")
+    except Exception as exp:
+       logger.error (str(exp))
+
 def profit_to_click():
     try:
+        sum_profit = 0
+        message = "<b>Coins:</b>\n"
+        price_coins_to_click()
+        agg_coins_road = profit_by_coins()
         click_client = Client('localhost',database='coins',user='stat', password='stat')
         click_client.execute (
-            'INSERT INTO coins_road (calc_time,symbol,amount,start_market,profit) VALUES', profit_by_coins()
+            'INSERT INTO coins_road (calc_time,symbol,amount,start_market,profit) VALUES', agg_coins_road
         )
+        for coin in agg_coins_road:
+           sum_profit =  sum_profit + coin[4]
+           message = message + f" {coin[0].strftime('%d%m%Y %H:%M:%S')} <a href=\"https://ru.tradingview.com/symbols/{str(coin[1])}/\">{str(coin[1])}</a>: <b>{str(coin[4])}</b>" + "\n"
         logger.info('Success insert')
+        telegram_bot_sendtext(message + f"<b>Profit</b>: {round(sum_profit,2)} \n")
     except Exception as exp:
         logger.error(exp)
         return print(str(exp))
@@ -214,7 +244,6 @@ def profit_to_click():
 if __name__ == '__main__':
     setup_logging("logs")
     schedule.every().day.at('00:00:01').do(transactions_to_click)
-    schedule.every(int(CHECK_PRICE)).minutes.do(price_coins_to_click)
     schedule.every(int(TIME_CALC)).minutes.do(profit_to_click)
     while True:
         schedule.run_pending()
