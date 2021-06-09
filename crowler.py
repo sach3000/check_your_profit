@@ -9,7 +9,6 @@ import hashlib
 import pandas as pd
 from urllib.parse import urlencode
 from clickhouse_driver import Client
-import telegram_send
 
 
 log_file = "logs/debug.log"
